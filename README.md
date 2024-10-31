@@ -1,4 +1,3 @@
-# Go_Concurrency
 GO Concurrency
 ===
 
