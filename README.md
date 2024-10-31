@@ -46,6 +46,7 @@ or
  - `main` function itself a GoRoutine
  - GoRoutine is very light weight Thread. They are all managaed (with schedualer) and they need very very low memory. Where in Java Platform Thread needs ~ 2MB
  - GoRoutine is not platform Thread.
+ - GoRoutine can not communicate with eatch other like channels
 
  ### WaitGropus instaed of time.sleep(*)
  - we need to make the main thread to wait for the  another goRoutine to get the output

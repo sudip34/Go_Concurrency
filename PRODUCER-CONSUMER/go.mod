@@ -1,0 +1,3 @@
+module PRODUCER-COMSUMER
+
+go 1.23.1
