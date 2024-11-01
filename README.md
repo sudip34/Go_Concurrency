@@ -169,7 +169,27 @@ func main() {
 ### Channels 
 - Channels are a means of having GoRoutines share data
 - They can talk to each other
+- Channels are like pipes. They are either **pushing data to another GoRoutine** or **getting data from another GoRoutine**
 - Channels can be Unidirectional and bidirectional
+- Channels can be buffered, or unbuffered
+- Channels typically only accept a given type or interface
+- RECEIVE only channel: `<-chan`
+- SEND only channel: `chan<-`
+
+```
+// RECEIVE only channel: `<-chan` 
+// SEND only channel: `chan<-`
+func shout(ping <-chan string, pong chan<- string) {     
+	for {
+	        
+	       // ping channel sending the string to variable s with `<- channel`
+		s := <-ping
+		
+		//pong channel receives string here  with `channel <-`                                      
+		pong <- fmt.Sprintf("%s!!!", strings.ToUpper(s)) 
+	}
+}
+```
 
 > GOLDEN RULE:  We must close a chan after the use
 
@@ -186,3 +206,4 @@ case quitChan := <-pizzaMaker.quit:
 
 }
 ```
+
