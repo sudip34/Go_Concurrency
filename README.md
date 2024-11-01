@@ -114,7 +114,8 @@ or
 - install `gcc` compiler to check `-race`
 - run in cmd: `set CGO_ENABLED=1`
 
-***MUTEX*** - mutual exclusion
+***MUTEX*** - mutual exclusion 
+- similar to **semaphore in java/C**
 - relatively simple to use
 - Dealing with sheared resources and concurrent/parallel goroutines 
 - Lock/Unlock
@@ -213,5 +214,5 @@ default:
  
 - how to chreate a buffered-channel: with a buffereSzie
 
-> nameOfChannle := make(chan <TYPE>, bufferSize)
+> nameOfChannle := make(chan <_TYPE_>, bufferSize)
 
