@@ -203,7 +203,15 @@ select {
 case pizzaMaker.data <- *currentPizza:
 
 case quitChan := <-pizzaMaker.quit:
+default:
+    // use to get out of deadlock or avoidig deadlock
 
 }
 ```
+
+**Buffered-Channel**
+ 
+- how to chreate a buffered-channel: with a buffereSzie
+
+> nameOfChannle := make(chan <TYPE>, bufferSize)
 
