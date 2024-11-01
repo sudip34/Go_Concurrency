@@ -130,6 +130,8 @@ mutex.Lock()
 something that will performed 
 mutex.Unlock()
 ```
+example of `sync.Mutex`
+```
 package main
 
 import (
@@ -162,7 +164,6 @@ func main() {
 	fmt.Print(msg)
 
 }
-
 ```
 
 ### Channels 
@@ -170,4 +171,18 @@ func main() {
 - They can talk to each other
 - Channels can be Unidirectional and bidirectional
 
+> GOLDEN RULE:  We must close a chan after the use
 
+> `chan chan` is a mean to close a `chan` 
+
+> we use `select` statement only for channels
+
+```
+select {
+		//we sent something to the data channel
+case pizzaMaker.data <- *currentPizza:
+
+case quitChan := <-pizzaMaker.quit:
+
+}
+```

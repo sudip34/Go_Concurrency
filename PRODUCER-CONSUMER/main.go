@@ -154,6 +154,5 @@ func main() {
 		color.Yellow("It was a pretty good day...")
 	default:
 		color.Green("It was a greate day !")
-
 	}
 }
