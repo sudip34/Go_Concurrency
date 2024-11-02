@@ -23,6 +23,9 @@ Don't over-engineer things by using shared memory and complicated, error-prone s
 
  ### Make
  - install Make
+ ```
+ choco install make
+ ```
 
 
  ## comand to build a project in go
