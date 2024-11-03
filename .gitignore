@@ -1,0 +1,6 @@
+SUBSCRIPTION-SERVICE/db-data/postgres/pg_stat_tmp/db_0.stat
+SUBSCRIPTION-SERVICE/db-data/postgres/pg_stat_tmp/db_13757.stat
+SUBSCRIPTION-SERVICE/db-data/postgres/pg_stat_tmp/db_16384.stat
+SUBSCRIPTION-SERVICE/db-data/postgres/pg_stat_tmp/global.stat
+SUBSCRIPTION-SERVICE/db-data/*
+
