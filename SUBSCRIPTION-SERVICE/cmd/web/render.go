@@ -7,6 +7,10 @@ import (
 	"time"
 )
 
+// form /cmd/web with maing.go  go run .
+// var pathToTemplates = "./templates"
+
+// from the Makefile
 var pathToTemplates = "./cmd/web/templates"
 
 type TemplateData struct {
@@ -16,7 +20,8 @@ type TemplateData struct {
 	Data          map[string]any
 	Flash         string
 	Warning       string
-	Authenticated int
+	Error         string
+	Authenticated bool
 	Now           time.Time
 	// User *data.User
 }
@@ -28,6 +33,7 @@ func (app *Config) render(w http.ResponseWriter, r *http.Request, t string, td *
 		fmt.Sprintf("%s/navbar.partial.gohtml", pathToTemplates),
 		fmt.Sprintf("%s/footer.partial.gohtml", pathToTemplates),
 		fmt.Sprintf("%s/alerts.partial.gohtml", pathToTemplates),
+		fmt.Sprintf("%s/home.page.gohtml", pathToTemplates),
 	}
 
 	var templateSlice []string
@@ -50,9 +56,25 @@ func (app *Config) render(w http.ResponseWriter, r *http.Request, t string, td *
 		return
 	}
 
-	if err := tmpl.Execute(w, nil); err != nil {
+	if err := tmpl.Execute(w, app.AddDefaultData(td, r)); err != nil {
 		app.ErrorLog.Println(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+}
+
+func (app *Config) AddDefaultData(td *TemplateData, r *http.Request) *TemplateData {
+	td.Flash = app.Session.PopString(r.Context(), "flash")
+	td.Warning = app.Session.PopString(r.Context(), "warning")
+	td.Error = app.Session.PopString(r.Context(), "error")
+	if app.IsAuthenticated(r) {
+		td.Authenticated = true
+		//TODO - get more user infomation
+	}
+	td.Now = time.Now()
+	return td
+}
+
+func (app *Config) IsAuthenticated(r *http.Request) bool {
+	return app.Session.Exists(r.Context(), "userID")
 }

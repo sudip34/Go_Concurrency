@@ -1,4 +1,4 @@
-DSN=host=localhost port=5432 user=postgres password=password dbname=concurrency sslmode=disable timezone=UTC connect_timeout=5
+DSN=user=postgres password=password host=localhost port=5432 database=concurrency sslmode=disable connect_timeout=5 timezone=UTC 
 BINARY_NAME=myapp.exe
 REDIS="127.0.0.1:6379"
 

@@ -17,7 +17,7 @@ import (
 	_ "github.com/jackc/pgx/v4/stdlib"
 )
 
-const webPort = "80"
+const webPort = ":80"
 
 func main() {
 	//connect to database
@@ -54,7 +54,7 @@ func main() {
 
 func (app *Config) serve() {
 	srv := &http.Server{
-		Addr:    fmt.Sprintf("%s", webPort),
+		Addr:    webPort,
 		Handler: app.routes(),
 	}
 
@@ -67,48 +67,54 @@ func (app *Config) serve() {
 }
 
 func initDB() *sql.DB {
-	conn := connectDB()
+	conn := connectToDB()
 	if conn == nil {
 		log.Panic("Can't connect to database")
 	}
 	return conn
 }
 
-func connectDB() *sql.DB {
+// connectToDB tries to connect to postgres, and backs off until a connection
+// is made, or we have not connected after 10 tries
+func connectToDB() *sql.DB {
 	counts := 0
+
+	// dsn := "user=postgres password=password host=localhost port=5432 database=concurrency sslmode=disable connect_timeout=5"
 
 	dsn := os.Getenv("DSN")
 
 	for {
-		connection, err := OpenDB(dsn)
+		connection, err := openDB(dsn)
 		if err != nil {
-			log.Println("Database not yet ready ...")
+			log.Println("postgres not yet ready...")
 		} else {
-			log.Println("Connect to databse")
+			log.Print("connected to database!")
 			return connection
 		}
 
-		if counts > 10 {
+		if counts > 20 {
 			return nil
 		}
 
 		log.Print("Backing off for 1 second")
 		time.Sleep(1 * time.Second)
 		counts++
+
 		continue
 	}
-
 }
 
-func OpenDB(dsn string) (*sql.DB, error) {
+func openDB(dsn string) (*sql.DB, error) {
 	db, err := sql.Open("pgx", dsn)
 	if err != nil {
 		return nil, err
 	}
+
 	err = db.Ping()
 	if err != nil {
 		return nil, err
 	}
+
 	return db, nil
 }
 
