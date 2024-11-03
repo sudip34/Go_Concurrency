@@ -2,11 +2,15 @@ package main
 
 import (
 	"database/sql"
+	"encoding/gob"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
+	"subscirption-service/data"
 	"sync"
+	"syscall"
 	"time"
 
 	"github.com/alexedwards/scs/redisstore"
@@ -44,9 +48,13 @@ func main() {
 		InfoLog:  infoLog,
 		ErrorLog: errorLog,
 		Wait:     &wg,
+		Models:   data.New(db),
 	}
 
 	// set up mail
+
+	// listen for signals
+	go app.ListenForShutdown()
 
 	// listen for web connections
 	app.serve()
@@ -119,6 +127,9 @@ func openDB(dsn string) (*sql.DB, error) {
 }
 
 func initSession() *scs.SessionManager {
+	//register user in to a session
+	gob.Register(data.User{})
+	//setup
 	session := scs.New()
 	session.Store = redisstore.New(initRadis())
 	session.Lifetime = 24 * time.Hour
@@ -138,4 +149,21 @@ func initRadis() *redis.Pool {
 		},
 	}
 	return redisPool
+}
+
+func (app *Config) ListenForShutdown() {
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+	app.shutdown()
+	os.Exit(0)
+}
+
+func (app *Config) shutdown() {
+	//perform any cleanup-task
+	app.InfoLog.Println("would run clean up tasks..")
+
+	//block until Waitgroup is empty
+	app.Wait.Wait()
+	app.InfoLog.Println("closing channels and shutting down")
 }

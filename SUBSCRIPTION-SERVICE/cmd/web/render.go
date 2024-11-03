@@ -33,11 +33,13 @@ func (app *Config) render(w http.ResponseWriter, r *http.Request, t string, td *
 		fmt.Sprintf("%s/navbar.partial.gohtml", pathToTemplates),
 		fmt.Sprintf("%s/footer.partial.gohtml", pathToTemplates),
 		fmt.Sprintf("%s/alerts.partial.gohtml", pathToTemplates),
-		fmt.Sprintf("%s/home.page.gohtml", pathToTemplates),
+		// fmt.Sprintf("%s/home.page.gohtml", pathToTemplates),
+		// fmt.Sprintf("%s/login.page.gohtml", pathToTemplates),
+		// fmt.Sprintf("%s/register.page.gohtml", pathToTemplates),
+		// fmt.Sprintf("%s/mail.plain.gohtml", pathToTemplates),
 	}
 
 	var templateSlice []string
-
 	templateSlice = append(templateSlice, fmt.Sprintf("%s/%s", pathToTemplates, t))
 
 	for _, x := range partials {
