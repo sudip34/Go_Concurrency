@@ -44,6 +44,22 @@ go get github.com/go-chi/chi/middleware
 
 
 
+## Maile server 
+
+- get the following dependencies:
+
+To make the html mail more profesional:
+```
+ go get github.com/vanng822/go-premailer/premailer
+```
+mail-service:
+
+```
+go get github.com/xhit/go-simple-mail/v2
+```
+
+
+
 
 
 
