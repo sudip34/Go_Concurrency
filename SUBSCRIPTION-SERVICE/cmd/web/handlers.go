@@ -115,18 +115,87 @@ func (app *Config) PostRegisterPage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	app.sendEmail(msg)
-	app.Session.Put(r.Context(), "flash", "Confirmation email sent. Check your email")
+	app.Session.Put(r.Context(), "flash", "Confirmation email sent. Check your email.")
 	http.Redirect(w, r, "/login", http.StatusSeeOther)
 
 }
 func (app *Config) ActivateAccount(w http.ResponseWriter, r *http.Request) {
 	// validate url
+	url := r.RequestURI
+	testURL := fmt.Sprintf("http://localhost%s", url)
 
-	// generate an invoice
+	okey := VerifyToken(testURL)
+
+	if !okey {
+		app.Session.Put(r.Context(), "error", "Invalid token")
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+		return
+	}
+
+	// activate account
+	u, err := app.Models.User.GetByEmail(r.URL.Query().Get("email"))
+
+	if err != nil {
+		app.Session.Put(r.Context(), "error", "No user found")
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+		return
+	}
+
+	u.Active = 1
+	err = u.Update()
+	if err != nil {
+		app.Session.Put(r.Context(), "error", "Unable to update the user")
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+		return
+	}
+	app.Session.Put(r.Context(), "flash", "Account Activated. You can now log in.")
+	http.Redirect(w, r, "/login", http.StatusSeeOther)
 
 	// send an email with attachments
 
 	// send an email with the invoice attached
 
+}
+
+func (app *Config) SubscribeToPlan(w http.ResponseWriter, r *http.Request) {
+	//get the id of the plan that is chossen
+
+	// get the plan from the databse
+
+	//get the user from the session
+
+	// generate an invoice
+
+	// send an email with the invoice attached
+
+	//generate a Manuel
+
+	// send an email with the manule attached
+
 	// subscbribe the user to an account
+
+	// redirect
+
+}
+
+func (app *Config) ChooseSbuscription(w http.ResponseWriter, r *http.Request) {
+	if !app.Session.Exists(r.Context(), "userID") {
+		app.Session.Put(r.Context(), "warning", "You must log in to see this page!")
+		http.Redirect(w, r, "/login", http.StatusTemporaryRedirect)
+		return
+	}
+
+	plans, err := app.Models.Plan.GetAll()
+	if err != nil {
+		app.ErrorLog.Println(err)
+		return
+	}
+
+	dataMap := make(map[string]any)
+	dataMap["plans"] = plans
+
+	app.render(w, r, "plans.page.gohtml", &TemplateData{
+		Data: dataMap,
+	})
+
 }
