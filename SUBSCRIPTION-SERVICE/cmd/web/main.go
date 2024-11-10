@@ -165,5 +165,34 @@ func (app *Config) shutdown() {
 
 	//block until Waitgroup is empty
 	app.Wait.Wait()
+	app.Mailer.DoneCahn <- true
+
 	app.InfoLog.Println("closing channels and shutting down")
+
+	//close all mailer channel
+	close(app.Mailer.MailerChan)
+	close(app.Mailer.ErrorChan)
+	close(app.Mailer.DoneCahn)
+}
+
+func (app *Config) createMail() Mail {
+	//create channels
+	errorChan := make(chan error)
+	mailerChan := make(chan Message, 100)
+	mailerDoneChan := make(chan bool)
+
+	m := Mail{
+		Domain:      "localhost",
+		Host:        "localhost",
+		Port:        8025,
+		Encryption:  "none",
+		FromAddress: "info@sudip.com",
+		FromName:    "Info",
+		Wait:        app.Wait,
+		ErrorChan:   errorChan,
+		MailerChan:  mailerChan,
+		DoneCahn:    mailerDoneChan,
+	}
+
+	return m
 }

@@ -1,10 +1,13 @@
 package main
 
 import (
+	"bytes"
+	"fmt"
 	"sync"
+	"text/template"
 	"time"
 
-	mail "github.com/xhit/go-simple-mail"
+	"github.com/vanng822/go-premailer/premailer"
 	mail "github.com/xhit/go-simple-mail/v2"
 )
 
@@ -34,9 +37,24 @@ type Message struct {
 	Template    string
 }
 
+// a function to listen for any mail
+func (app *Config) listenForMail() {
+	for {
+		select {
+		case msg := <-app.Mailer.MailerChan:
+			go app.Mailer.sendMail(msg, app.Mailer.ErrorChan)
+		case err := <-app.Mailer.ErrorChan:
+			app.ErrorLog.Println(err)
+		case <-app.Mailer.DoneCahn:
+			return
+		}
+	}
+}
+
 // a function to listen for messages on the MailerChan
 
 func (m *Mail) sendMail(msg Message, errorChan chan error) {
+	defer m.Wait.Done()
 
 	if msg.Template == "" {
 		msg.Template = "mail"
@@ -102,11 +120,47 @@ func (m *Mail) sendMail(msg Message, errorChan chan error) {
 }
 
 func (m *Mail) buildHTMLMessage(msg Message) (string, error) {
-	return "", nil
+	templateFile := fmt.Sprintf("./cmd/web/templates/%s.html.gohtml", msg.Template)
+
+	htmlTemplate, err := template.New("email-htmp").ParseFiles(templateFile)
+	if err != nil {
+		return "", nil
+	}
+
+	// write the template out
+	var bufferWriter bytes.Buffer
+	if err := htmlTemplate.ExecuteTemplate(&bufferWriter, "body", msg.DataMap); err != nil {
+		return "", err
+	}
+
+	// make the output of the bufferWriter as formatted String
+	formattedMsg := bufferWriter.String()
+	formattedMsg, err = m.inlineCSS(formattedMsg)
+	if err != nil {
+		return "", nil
+	}
+	return formattedMsg, nil
+
 }
 
 func (m *Mail) buildPlainTextMessage(msg Message) (string, error) {
-	return "", nil
+	templateFile := fmt.Sprintf("./cmd/web/templates/%s.html.gohtml", msg.Template)
+
+	plainTemplate, err := template.New("email-htmp").ParseFiles(templateFile)
+	if err != nil {
+		return "", nil
+	}
+
+	// write the template out
+	var bufferWriter bytes.Buffer
+	if err := plainTemplate.ExecuteTemplate(&bufferWriter, "body", msg.DataMap); err != nil {
+		return "", err
+	}
+
+	// make the output of the bufferWriter as formatted String
+	plainMsg := bufferWriter.String()
+
+	return plainMsg, nil
 }
 
 func (m *Mail) getEncryption(e string) mail.Encryption {
@@ -121,4 +175,23 @@ func (m *Mail) getEncryption(e string) mail.Encryption {
 		return mail.EncryptionSTARTTLS
 
 	}
+}
+
+func (m *Mail) inlineCSS(s string) (string, error) {
+	options := premailer.Options{
+		RemoveClasses:     false,
+		CssToAttributes:   false,
+		KeepBangImportant: true,
+	}
+
+	htmlPremailer, err := premailer.NewPremailerFromString(s, &options)
+	if err != nil {
+		return "", nil
+	}
+
+	htmlString, err := htmlPremailer.Transform()
+	if err != nil {
+		return "", nil
+	}
+	return htmlString, nil
 }
